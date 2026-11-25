@@ -1,0 +1,15 @@
+flowchart LR
+    subgraph P["Presentation"]
+        CLI["Java CLI<br/>thin HTTP client"]
+    end
+    subgraph A["Application"]
+        API["Spring Boot API<br/>controller, service, repository"]
+    end
+    subgraph D["Data"]
+        PG[("PostgreSQL<br/>accounts + transactions schemas")]
+        RD[("Redis<br/>account cache")]
+    end
+    CLI -- "HTTP / JSON" --> API
+    API -- JDBC --> PG
+    API -- "read-through cache" --> RD
+    PROM["Prometheus"] -. "scrapes /actuator/prometheus" .-> API

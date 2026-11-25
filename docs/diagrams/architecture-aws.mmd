@@ -1,0 +1,20 @@
+flowchart LR
+    U["CLI"] -- HTTPS --> ALB
+    subgraph VPC["VPC, 2 Availability Zones"]
+        subgraph PUB["Public subnets"]
+            ALB["Application<br/>Load Balancer"]
+        end
+        subgraph APP["Private app subnets"]
+            SVC["4 Spring Boot services<br/>on ECS"]
+            OBS["Prometheus<br/>+ Grafana"]
+        end
+        subgraph DATA["Private data subnets"]
+            RDS[("RDS<br/>PostgreSQL")]
+            EC[("ElastiCache<br/>Redis")]
+        end
+    end
+    ALB --> SVC
+    SVC --> RDS
+    SVC --> EC
+    OBS -. scrapes .-> SVC
+    CW["CloudWatch<br/>RDS, Redis, ALB metrics"] -. "read via AWS API" .-> OBS

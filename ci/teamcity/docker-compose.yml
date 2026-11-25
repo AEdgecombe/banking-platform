@@ -1,0 +1,29 @@
+# Local TeamCity: one server, one agent. Free on-premises licence covers this.
+#   docker compose -f ci/teamcity/docker-compose.yml up -d
+#   then open http://localhost:8111, finish setup, authorise the agent.
+services:
+  teamcity-server:
+    image: jetbrains/teamcity-server:latest
+    ports:
+      - "8111:8111"
+    volumes:
+      - teamcity-data:/data/teamcity_server/datadir
+      - teamcity-logs:/opt/teamcity/logs
+
+  teamcity-agent:
+    image: jetbrains/teamcity-agent:latest
+    environment:
+      SERVER_URL: http://teamcity-server:8111
+    # Root plus the host Docker socket lets build steps run in Docker and Testcontainers
+    # start sibling containers. Fine on a laptop, not something to copy to a shared server.
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - teamcity-agent-conf:/data/teamcity_agent/conf
+    depends_on:
+      - teamcity-server
+
+volumes:
+  teamcity-data:
+  teamcity-logs:
+  teamcity-agent-conf:
